@@ -11,7 +11,7 @@ import (
 	"strings"
 )
 
-func PublicKeysFromJWKS(jwksURI string) (map[string]any, error) {
+func KeySetFromURI(jwksURI string) (*jose.JSONWebKeySet, error) {
 	var jwksBytes []byte
 
 	if strings.HasPrefix(jwksURI, "http://") || strings.HasPrefix(jwksURI, "https://") {
@@ -42,7 +42,7 @@ func PublicKeysFromJWKS(jwksURI string) (map[string]any, error) {
 		return nil, err
 	}
 
-	var publicKeys = make(map[string]any, len(rawJwks["keys"]))
+	var keys = make([]jose.JSONWebKey, 0, len(rawJwks["keys"]))
 
 	for _, rawJwk := range rawJwks["keys"] {
 		var jwkBytes, _ = json.Marshal(rawJwk)
@@ -50,8 +50,8 @@ func PublicKeysFromJWKS(jwksURI string) (map[string]any, error) {
 		if err := jwk.UnmarshalJSON(jwkBytes); err != nil {
 			panic(err)
 		}
-		publicKeys[jwk.KeyID] = jwk.Key
+		keys = append(keys, *jwk)
 	}
 
-	return publicKeys, nil
+	return &jose.JSONWebKeySet{Keys: keys}, nil
 }

@@ -24,20 +24,20 @@ func TestPublicKeysFromJWKS(t *testing.T) {
 	defer server.Close()
 
 	t.Run("http_ok", func(t *testing.T) {
-		publicKeys, err := PublicKeysFromJWKS(server.URL + "/jwks.json")
+		keySet, err := KeySetFromURI(server.URL + "/jwks.json")
 		if err != nil {
-			t.Errorf("PublicKeysFromJWKS() error = %q", err)
+			t.Errorf("KeySetFromURI() error = %v", err)
 			return
 		}
-		if publicKeys == nil || len(publicKeys) != 1 {
-			t.Errorf("PublicKeysFromJWKS() publicKeys = %q, but should be map with 1 entry", publicKeys)
+		if keySet == nil || len(keySet.Key("key1")) != 1 {
+			t.Errorf("KeySetFromURI() keySet = %v, but should be map with 1 entry", keySet)
 		}
 	})
 
 	t.Run("http_failure", func(t *testing.T) {
-		_, err := PublicKeysFromJWKS(server.URL + "/wrong_path")
+		_, err := KeySetFromURI(server.URL + "/wrong_path")
 		if err == nil {
-			t.Errorf("PublicKeysFromJWKS() error = nil")
+			t.Errorf("KeySetFromURI() error = nil")
 		} else {
 			log.Print(err)
 		}
@@ -58,19 +58,19 @@ func TestPublicKeysFromJWKS(t *testing.T) {
 	}
 
 	t.Run("file_ok", func(t *testing.T) {
-		publicKeys, err := PublicKeysFromJWKS(jwksFilename)
+		keySet, err := KeySetFromURI(jwksFilename)
 		if err != nil {
-			t.Errorf("PublicKeysFromJWKS() error = %q", err)
+			t.Errorf("KeySetFromURI() error = %v", err)
 			return
 		}
-		if publicKeys == nil || len(publicKeys) != 1 {
-			t.Errorf("PublicKeysFromJWKS() publicKeys = %q, but should be map with 1 entry", publicKeys)
+		if keySet == nil || len(keySet.Key("key1")) != 1 {
+			t.Errorf("KeySetFromURI() keySet = %v, but should be map with 1 entry", keySet)
 		}
 	})
 	t.Run("file_not_found", func(t *testing.T) {
-		_, err := PublicKeysFromJWKS("unknown_jwks.json")
+		_, err := KeySetFromURI("unknown_jwks.json")
 		if err == nil {
-			t.Errorf("PublicKeysFromJWKS() error = nil")
+			t.Errorf("KeySetFromURI() error = nil")
 		} else {
 			log.Print(err)
 		}
